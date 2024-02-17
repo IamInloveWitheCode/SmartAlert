@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "933887971296",
+    "project_id": "smartalert-7486e",
+    "storage_bucket": "smartalert-7486e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933887971296:android:e88b9df380ff1e73a2a585",
+        "android_client_info": {
+          "package_name": "com.example.smartalert"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_x5Ffv-03aXBclEWgFRwlvUKYkDwLiWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
