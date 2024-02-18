@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 // Πως μπορώ να δείξω το Id του χρήστη που έκανε signup ή signin?
                                 //showMessage("User Id:",mAuth.getUid());
-                                intent2 = new Intent(MainActivity.this, MainActivity3.class);
+                                intent2 = new Intent(MainActivity.this, MainActivity5.class);
                                 Log.w("mAuth.getUid()",mAuth.getUid());
                                 intent2.putExtra("userID",mAuth.getUid());
                                 startActivity(intent2);
