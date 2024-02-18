@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SmartAlert</string>
+    <string name="Read_last_urgent_message">Read last urgent message</string>
+    <string name="user_ui">user ui</string>
 </resources>
