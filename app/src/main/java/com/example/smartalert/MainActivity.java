@@ -17,6 +17,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,8 +34,9 @@ public class MainActivity extends AppCompatActivity {
     EditText email,password;
 
     FirebaseAuth mAuth;
+    FirebaseUser user;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference collectionReference = db.collection("Users");
+    private CollectionReference collectionReference = db.collection("User");
 
 
     @Override
@@ -60,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Αρχικοποιώ το Authentication object της Firebase με Singleton Design Pattern
         mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
 
     }
 
@@ -138,16 +144,35 @@ public class MainActivity extends AppCompatActivity {
                             // ( Δηλαδή της παραμέτρου της συνάρτησης onComplete )
                             if (task.isSuccessful())
                             {
-                                showMessage("Success!", "User Authentication was successfull");
+                                user = mAuth.getCurrentUser();
+                                updateUser(user);
+                                //showMessage("Success!", "User Authentication was successfull");
+
+                                if (user != null) {
+                                    DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("User");
+                                    // Create a new User object with the necessary data
+                                    User newUser = new User(user.getUid(), email.getText().toString());
+
+                                    usersRef.child(user.getUid()).setValue(newUser)
+                                            .addOnSuccessListener(aVoid -> {
+                                                // Handle success
+                                                showMessage("Success", "User data saved successfully!");
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                // Handle failure
+                                                showMessage("Error", "Failed to save user data!");
+                                            });
+                                }
+
                                 // Μπορώ απο εκεί και ύστερα να έχω το όνομα του χρήστη από την βάση.
                                 // Η Firebase χρησιμοποιεί token σε AppLevel
 
                                 // Πως μπορώ να δείξω το Id του χρήστη που έκανε signup ή signin?
-                                //showMessage("User Id:",mAuth.getUid());
-                                intent2 = new Intent(MainActivity.this, MainActivity5.class);
-                                Log.w("mAuth.getUid()",mAuth.getUid());
-                                intent2.putExtra("userID",mAuth.getUid());
-                                startActivity(intent2);
+                                //showMessage("User Id:",user.getUid());
+                                //intent2 = new Intent(MainActivity.this, MainActivity5.class);
+                                //Log.w("mAuth.getUid()",mAuth.getUid());
+                                //intent2.putExtra("userID",mAuth.getUid());
+                                //startActivity(intent2);
                             }
                             else
                             {
@@ -168,5 +193,12 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setCancelable(true)
                 .show();
+    }
+
+    private void updateUser (FirebaseUser user){
+        UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
+                .build();
+
+        user.updateProfile(request);
     }
 }
