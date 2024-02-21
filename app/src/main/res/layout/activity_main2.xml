@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="228dp"
         android:onClick="submit"
-        android:text="submit an emergency incident"
+        android:text="@string/submit_an_emergency_incident"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

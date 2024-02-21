@@ -7,4 +7,13 @@
     <string name="Description">Description</string>
     <string name="Select_a_type_of_dangerous_situation">Select a type of dangerous situation</string>
     <string name="Location_not_taken_yet">Location not taken yet</string>
+    <string name="Sign_Up">Sign Up</string>
+    <string name="EnterEmail">Enter Email</string>
+    <string name="EnterPassword">Enter Password</string>
+    <string name="SignIn">Sign In</string>
+    <string name="submit_an_emergency_incident">submit an emergency incident</string>
+    <string name="fire">Fire</string>
+    <string name="flood">Flood</string>
+    <string name="tsunami">Tsunami</string>
+    <string name="earthquake">Earthquake</string>
 </resources>
