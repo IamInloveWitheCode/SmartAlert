@@ -1,19 +1,13 @@
 <resources>
-    <string name="app_name">SmartAlert</string>
-    <string name="Read_last_urgent_message">Read last urgent message</string>
-    <string name="user_ui">user ui</string>
-    <string name="Submit_the_form_below_to_report_incident">Submit the form below to report incident</string>
-    <string name="Submit">Submit</string>
-    <string name="Description">Description</string>
-    <string name="Select_a_type_of_dangerous_situation">Select a type of dangerous situation</string>
-    <string name="Location_not_taken_yet">Location not taken yet</string>
-    <string name="Sign_Up">Sign Up</string>
-    <string name="EnterEmail">Enter Email</string>
-    <string name="EnterPassword">Enter Password</string>
-    <string name="SignIn">Sign In</string>
-    <string name="submit_an_emergency_incident">submit an emergency incident</string>
-    <string name="fire">Fire</string>
-    <string name="flood">Flood</string>
-    <string name="tsunami">Tsunami</string>
-    <string name="earthquake">Earthquake</string>
+    <string name="app_name">smartalert</string>
+
+    <string-array name="dangers">
+        <item>Fire</item>
+        <item>Flood</item>
+        <item>Earthquake</item>
+        <item>Tsunami</item>
+    </string-array>
+
+    <string name="user_ui">user_ui</string>
+    <string name="Read_last_urgent_message">Read_last_urgent_message</string>
 </resources>

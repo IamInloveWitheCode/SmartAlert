@@ -1,26 +1,41 @@
 package com.example.smartalert;
 
 public class User {
-
+    private String uid;
     private String email;
+    private String role; // New field for user role
 
-    private String userId;
+    public User() {
+        // Default constructor required for calls to DataSnapshot.getValue(User.class)
+    }
 
-    public User(String userId, String email) {
+    public User(String uid, String email, String role) {
+        this.uid = uid;
         this.email = email;
-        this.userId = userId;
+        this.role = role;
     }
 
-    // Getters and setters
-
-    public String getUserId() {
-        return userId;
+    public String getUid() {
+        return uid;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

@@ -1,157 +1,67 @@
 package com.example.smartalert;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity {
 
-    //Each intent represents the Activities that I will open
-    Intent intent,intent2,intent3;
+    EditText email, password;
 
-    EditText email,password;
-
-    FirebaseAuth mAuth;
+    FirebaseAuth auth;
     FirebaseUser user;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference collectionReference = db.collection("User");
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Subscribe to all notifications
-        FirebaseMessaging.getInstance().subscribeToTopic("Emergencies")
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        String msg = "Done";
-                        if (!task.isSuccessful()) {
-                            msg = "failed";
-                        }
-//                        Log.d(TAG, msg);
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        // Αρχικοποιώ το απο που θα παίρνω δεδομένα για το email και password που εισάγει ο χρήστης
         email= findViewById(R.id.editTextTextPersonName2);
         password=findViewById(R.id.editTextTextPersonName);
 
-        // Αρχικοποιώ το Authentication object της Firebase με Singleton Design Pattern
-        mAuth = FirebaseAuth.getInstance();
-        user = mAuth.getCurrentUser();
-
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
     }
 
-    public void signin(View view)
-    {
-        if(email.getText().toString().equals("") || password.getText().toString().equals(""))
-        {
-            showMessage("Error!","You cannot leave Email or Password blank");
-        }
-        else
-        {
-            mAuth.signInWithEmailAndPassword(email.getText().toString().trim(), password.getText().toString().trim())
-                    // Using a Lambda expression
-                    .addOnCompleteListener((task) -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this,"Welcome to the smart Alert app!!",Toast.LENGTH_LONG).show();
-
-//                            String userRole, userId;
-//                            DocumentSnapshot documentSnapshot = collectionReference.document(mAuth.getUid()).get();
-                            collectionReference.document(mAuth.getUid()).get()
-                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                            if(documentSnapshot.exists())
-                                            {
-                                                String userRole = documentSnapshot.getString("Role");
-
-                                                if(userRole.equals("User"))
-                                                {
-                                                    intent = new Intent(MainActivity.this, MainActivity2.class);
-                                                    startActivity(intent);
-                                                }
-                                                else
-                                                {
-                                                    intent3 = new Intent(MainActivity.this, MainActivity4.class);
-                                                    startActivity(intent3);
-                                                }
-                                            }
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            showMessage("Error", task.getException().getLocalizedMessage());
-                                        }
-                                    });
-
-                        } else {
-                            showMessage("Error", task.getException().getLocalizedMessage());
-                        }
-                    });
-        }
+    void showMessage(String title, String message){
+        new AlertDialog.Builder(this).setTitle(title).setMessage(message).setCancelable(true).show();
     }
 
-    public void signup(View view)
-    {
-        // Δήλωση του Broadcast receiver:
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(Intent.ACTION_POWER_CONNECTED);
-//        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-//        registerReceiver(new MyReceiver(),filter);
 
-        if(email.getText().toString().equals("") || password.getText().toString().equals(""))
-        {
-            showMessage("Error!","You cannot leave Email or Password blank");
-        }
-        else
-        {
-            mAuth.createUserWithEmailAndPassword(email.getText().toString().trim(), password.getText().toString().trim())
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>()
-                    {
+    public void signup(View view){
+        if(!email.getText().toString().isEmpty() &&
+                !password.getText().toString().isEmpty()){
+            auth.createUserWithEmailAndPassword(email.getText().toString(),password.getText().toString())
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
-                        public void onComplete(@NonNull Task<AuthResult> task)
-                        {
-                            // Έχω 1 μόνο Listener και επιλέγω τα αποτελέσματα που μου δίνει με τη βοήθεια του task
-                            // ( Δηλαδή της παραμέτρου της συνάρτησης onComplete )
-                            if (task.isSuccessful())
-                            {
-                                user = mAuth.getCurrentUser();
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()){
+                                user = auth.getCurrentUser();
                                 updateUser(user);
-                                //showMessage("Success!", "User Authentication was successfull");
+                                showMessage("Success", "User profile created!");
 
+                                // Write user data to Firebase Realtime Database
                                 if (user != null) {
                                     DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("User");
-                                    // Create a new User object with the necessary data
-                                    User newUser = new User(user.getUid(), email.getText().toString());
+                                    // Create a new User object with the necessary data including role
+                                    User newUser = new User(user.getUid(), email.getText().toString(), "User");
 
                                     usersRef.child(user.getUid()).setValue(newUser)
                                             .addOnSuccessListener(aVoid -> {
@@ -163,42 +73,76 @@ public class MainActivity extends AppCompatActivity {
                                                 showMessage("Error", "Failed to save user data!");
                                             });
                                 }
-
-                                // Μπορώ απο εκεί και ύστερα να έχω το όνομα του χρήστη από την βάση.
-                                // Η Firebase χρησιμοποιεί token σε AppLevel
-
-                                // Πως μπορώ να δείξω το Id του χρήστη που έκανε signup ή signin?
-                                //showMessage("User Id:",user.getUid());
-                                //intent2 = new Intent(MainActivity.this, MainActivity5.class);
-                                //Log.w("mAuth.getUid()",mAuth.getUid());
-                                //intent2.putExtra("userID",mAuth.getUid());
-                                //startActivity(intent2);
-                            }
-                            else
-                            {
-                                // Αυτό το else πετάει το σωστό μήνυμα που πρέπει να δει ο χρήστης
-                                // Χρησιμοποιώντας το ".getException().getLocalizedMessage()" :
-                                // πιάνω όλα τα πιθανά errors, και όχι μόνο αυτό, δείχνω μάλιστα
-                                // και το κατάλληλο μήνυμα στον χρήστη
-                                showMessage("Error!", task.getException().getLocalizedMessage());
+                            }else{
+                                showMessage("Error", task.getException().getLocalizedMessage());
                             }
                         }
                     });
+        }else{
+            showMessage("Error","Please provide all Info!");
         }
     }
 
-    void showMessage(String title, String message){
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setCancelable(true)
-                .show();
-    }
-
-    private void updateUser (FirebaseUser user){
+    private void updateUser(FirebaseUser user){
         UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
                 .build();
 
         user.updateProfile(request);
     }
+
+
+    public void signin(View view){
+        String userEmail = email.getText().toString();
+        String userPassword = password.getText().toString();
+
+        if(!userEmail.isEmpty() && !userPassword.isEmpty()){
+            auth.signInWithEmailAndPassword(userEmail, userPassword)
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if(task.isSuccessful()){
+                                FirebaseUser user = auth.getCurrentUser();
+                                DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("User");
+                                usersRef.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if(snapshot.exists()){
+                                            User userData = snapshot.getValue(User.class);
+                                            if(userData != null){
+                                                String role = userData.getRole();
+                                                if(role.equals("User")){
+                                                    // Go to MainActivity2
+                                                    Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
+                                                    intent.putExtra("userId",user.getUid());
+
+                                                    startActivity(intent);
+                                                } else if(role.equals("Admin")) {
+                                                    showMessage("Info", "Welcome Admin!");
+                                                } else {
+                                                    showMessage("Error", "Unknown role!");
+                                                }
+                                            } else {
+                                                showMessage("Error", "User data is null!");
+                                            }
+                                        } else {
+                                            showMessage("Error", "User data not found!");
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                        showMessage("Error", "Database error: " + error.getMessage());
+                                    }
+                                });
+                            } else {
+                                showMessage("Error", "Authentication failed: " + task.getException().getMessage());
+                            }
+                        }
+                    });
+        } else {
+            showMessage("Error", "Please provide email and password!");
+        }
+    }
+
+
 }
