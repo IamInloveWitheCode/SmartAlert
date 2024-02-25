@@ -10,4 +10,5 @@
 
     <string name="user_ui">user_ui</string>
     <string name="Read_last_urgent_message">Read_last_urgent_message</string>
+    <string name="location">Location</string>
 </resources>
