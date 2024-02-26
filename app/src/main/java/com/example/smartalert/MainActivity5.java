@@ -11,7 +11,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity5 extends AppCompatActivity {
-    TextView textView2;
     String userId;
 
 
@@ -20,9 +19,7 @@ public class MainActivity5 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main5);
-        textView2 = findViewById(R.id.textView2);
         userId = getIntent().getStringExtra("userId");
-        textView2.setText(userId);
 
 
     }

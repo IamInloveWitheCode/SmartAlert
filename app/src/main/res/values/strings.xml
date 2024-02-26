@@ -1,13 +1,5 @@
 <resources>
     <string name="app_name">smartalert</string>
-
-    <string-array name="dangers">
-        <item>Fire</item>
-        <item>Flood</item>
-        <item>Earthquake</item>
-        <item>Tsunami</item>
-    </string-array>
-
     <string name="user_ui">user_ui</string>
     <string name="Read_last_urgent_message">Read_last_urgent_message</string>
     <string name="location">Location</string>

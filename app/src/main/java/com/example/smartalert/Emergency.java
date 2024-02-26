@@ -4,9 +4,11 @@ public class Emergency {
     private String description = "";
     private String emergency = "";
     private String latitude = "";
-    private String longtitude = "";
+    private String longitude = "";
     private String location = "";
     private String timestamp = "";
+    private String userID = "";
+    private String imageUrl = ""; // New field for image URL
 
     @Override
     public String toString() {
@@ -14,54 +16,68 @@ public class Emergency {
                 "description='" + description + "/n" +
                 ", emergency='" + emergency + "/n" +
                 ", latitude='" + latitude + "/n" +
-                ", longtitude='" + longtitude + "/n" +
+                ", longitude='" + longitude + "/n" +
                 ", location='" + location + "/n" +
                 ", timestamp='" + timestamp + "/n" +
+                ", user='" + userID + "/n" +
+                ", user='" + imageUrl + "/n" +
                 '}';
     }
 
-    public Emergency(){
+    public Emergency() {
 
     }
 
-    public Emergency(String Description, String Emergency, String Latitude, String Longtitude, String Location, String Timestamp)
-    {
+    // Update the constructor to accept a User object for userID
+    public Emergency(String Description, String Emergency, String Latitude, String Longitude, String Location, String Timestamp, String UserID,String imageUrl) {
         this.description = Description;
         this.emergency = Emergency;
         this.latitude = Latitude;
-        this.longtitude = Longtitude;
+        this.longitude = Longitude;
         this.location = Location;
         this.timestamp = Timestamp;
+        this.userID = UserID;
+        this.imageUrl = imageUrl;
     }
 
-    public String getDescription()
-    {
+
+    public String getDescription() {
         return description;
     }
 
-    public String getEmergency()
-    {
+    public String getEmergency() {
         return emergency;
     }
 
-    public String getLatitude()
-    {
+    public String getLatitude() {
         return latitude;
     }
 
-    public String getLongtitude()
-    {
-        return longtitude;
+    public String getLongitude() {
+        return longitude;
     }
 
-    public String getLocation()
-    {
+    public String getLocation() {
         return location;
     }
 
-    public String getTimestamp()
-    {
+    public String getTimestamp() {
         return timestamp;
     }
 
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
+

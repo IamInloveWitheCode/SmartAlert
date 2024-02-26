@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="dangers">dangers</string-array>
+    <string-array name="dangers">
+        <item>Fire</item>
+        <item>Flood</item>
+        <item>Earthquake</item>
+        <item>Storm</item>
+        <item>Hurricane</item>
+    </string-array>
 </resources>

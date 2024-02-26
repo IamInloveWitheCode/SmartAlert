@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 // Write user data to Firebase Realtime Database
                                 if (user != null) {
-                                    DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+                                    DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("User");
                                     // Create a new User object with the necessary data including role
                                     User newUser = new User(user.getUid(), email.getText().toString(), "User");
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 FirebaseUser user = auth.getCurrentUser();
-                                DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+                                DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("User");
                                 usersRef.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {

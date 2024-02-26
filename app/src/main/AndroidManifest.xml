@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
 
     <application
         android:allowBackup="true"
@@ -24,7 +26,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="MainActivity2" >
+        <activity android:name=".MainActivity2">
+
+        </activity>
+        <activity android:name=".MainActivity3">
+
+        </activity>
+        <activity android:name=".MainActivity4">
+
+        </activity>
+        <activity android:name=".MainActivity5">
+
+        </activity>
+        <activity android:name=".MainActivity6">
+
+        </activity>
+        <activity android:name=".MainActivity7">
 
         </activity>
     </application>
