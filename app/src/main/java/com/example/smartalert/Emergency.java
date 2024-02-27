@@ -9,6 +9,7 @@ public class Emergency {
     private String timestamp = "";
     private String userID = "";
     private String imageUrl = ""; // New field for image URL
+    private int count=0;
 
     @Override
     public String toString() {
@@ -20,7 +21,8 @@ public class Emergency {
                 ", location='" + location + "/n" +
                 ", timestamp='" + timestamp + "/n" +
                 ", user='" + userID + "/n" +
-                ", user='" + imageUrl + "/n" +
+                ", image='" + imageUrl + "/n" +
+                ", count='" + count + "/n" +
                 '}';
     }
 
@@ -38,6 +40,7 @@ public class Emergency {
         this.timestamp = Timestamp;
         this.userID = UserID;
         this.imageUrl = imageUrl;
+        this.count=count;
     }
 
 
@@ -78,6 +81,15 @@ public class Emergency {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+    // Getter method for count
+    public int getCount() {
+        return count;
+    }
+
+    // Setter method for count
+    public void setCount(int count) {
+        this.count = count;
     }
 }
 
