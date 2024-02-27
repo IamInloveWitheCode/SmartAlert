@@ -17,20 +17,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -51,10 +44,6 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
     private Uri selectedImageUri;
     private StorageReference storageReference;
     private LocationManager locationManager;
-    public static final double earthRadius = 6371.0;
-    int hours = 0;
-    int kilometers = 0;
-
 
     // Firebase Database reference
     private DatabaseReference dbEmergency;
@@ -133,66 +122,14 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         // Get reference to the "Emergencies" node in the database
         DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies");
 
-        // Set hours and kilometers based on the type of emergency
-        switch (TypeOfEmergency) {
-            case "Earthquake":
-                hours = 2;
-                kilometers = 150;
-                break;
-            case "Flood":
-                hours = 12;
-                kilometers = 100;
-                break;
-            case "Hurricane":
-                hours = 24;
-                kilometers = 80;
-                break;
-            case "Fire":
-                hours = 48;
-                kilometers = 200;
-                break;
-            case "Storm":
-                hours = 5;
-                kilometers = 50;
-                break;
-            default:
-                // Set default values or handle the case where the emergency type is not recognized
-                break;
-        }
-
-        // Check for existing events within a certain time frame and distance
-        // Update the count if an existing event is found
-        dbEmergency.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot alertSnapshot : dataSnapshot.getChildren()) {
-                    Emergency existingEmergency = alertSnapshot.getValue(Emergency.class);
-                    if (existingEmergency != null && isWithinHours(existingEmergency.getTimestamp(), stringdate, hours) && isWithinKilometers(existingEmergency.getLatitude() + "," + existingEmergency.getLongitude(), latitude + "," + longitude, kilometers) && existingEmergency.getEmergency().equals(TypeOfEmergency)) {
-                        int updatedCount = existingEmergency.getCount() + 1;
-                        alertSnapshot.getRef().child("count").setValue(updatedCount);
-                        return;
-                    }
-                }
-                // No existing event found, add a new entry
-                addNewEmergency(emergency, dbEmergency);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                showMessage("Error", "Database error: " + databaseError.getMessage());
-            }
-        });
-    }
-
-    // Method to add a new emergency entry to the database
-    private void addNewEmergency(Emergency emergency, DatabaseReference dbEmergency) {
+        // Generate a new unique key for the emergency data
         String emergencyId = dbEmergency.push().getKey();
+
+        // Use the generated key to set the value in the database
         dbEmergency.child(emergencyId).setValue(emergency)
                 .addOnSuccessListener(aVoid -> showMessage("Success", "Emergency data saved successfully!"))
-                .addOnFailureListener(e -> showMessage("Error", "Failed to save emergency data: " + e.getMessage()));
+                .addOnFailureListener(e -> showMessage("Error", "Failed to save emergency data!"));
     }
-
-
 
     // Activity Result API launcher for image selection
     private final ActivityResultLauncher<Intent> resultLauncher = registerForActivityResult(
@@ -240,35 +177,6 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
                 .setMessage(message)
                 .setCancelable(true)
                 .show();
-    }
-    public boolean isWithinHours(String timestamp1, String timestamp2, int n) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        try {
-            long diff = dateFormat.parse(timestamp1).getTime() - dateFormat.parse(timestamp2).getTime();
-            return Math.abs(diff) <= (long) n * 60 * 60 * 1000;
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    //Calculates the distance between 2 points using Haversine Formula
-    public static boolean isWithinKilometers(String location1, String location2, double n) {
-        String[] latLong1 = location1.split(",");
-        String[] latLong2 = location2.split(",");
-        double lat1 = Double.parseDouble(latLong1[0]);
-        double lon1 = Double.parseDouble(latLong1[1]);
-        double lat2 = Double.parseDouble(latLong2[0]);
-        double lon2 = Double.parseDouble(latLong2[1]);
-
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = earthRadius * c;
-
-        return distance <= n;
     }
 
 }
