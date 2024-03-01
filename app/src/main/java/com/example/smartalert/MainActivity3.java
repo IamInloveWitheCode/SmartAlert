@@ -1,6 +1,8 @@
 package com.example.smartalert;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -8,6 +10,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,6 +36,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -46,6 +51,7 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
     private String Userlocation = "";
     private String latitude;
     private String longitude;
+    String location = "";
     private String TypeOfEmergency;
     private Spinner spinner;
     private String userId;
@@ -78,7 +84,10 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
+        // Initialize locationManager
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        // Call getLocation method to get user's location
+        getLocation();
 
         selectImageButton.setOnClickListener(v -> openImagePicker());
 
@@ -127,20 +136,17 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
     // Modify the method to save emergency data with the image URL
     private void saveEmergencyData(String imageUrl) {
         String stringdesc = description.getText().toString();
-        String stringdate = mydate.getText().toString();
         DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies");
+        String timestamp = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now());
         DatabaseReference reference = database.getReference("Emergencies");
         String emergencyId = reference.push().getKey();
-        Emergency emergency = new Emergency(stringdesc, TypeOfEmergency, latitude, longitude, Userlocation, stringdate, userId, imageUrl);
+        Emergency emergency = new Emergency(stringdesc, TypeOfEmergency, latitude, longitude, location, timestamp, userId, imageUrl);
         reference.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
-                    String eventType = alertSnapshot.child("event").getValue(String.class);
-                    Log.d("EventType", "Event type from database: " + eventType);
-                    Log.d("EventType", "Event type of current emergency: " + emergency.getEmergency());
+                    String eventType = alertSnapshot.child("emergency").getValue(String.class);
 
                     if (eventType != null && eventType.equals(emergency.getEmergency())) {
-                        Log.d("EventType", "Event types match");
 
                         hours = 0;
                         kilometers = 0;
@@ -166,21 +172,20 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
                                 kilometers = 50;
                                 break;
                         }
-                        Log.d("EventType", "Hours: " + hours + ", Kilometers: " + kilometers);
-
                         if (isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours) &&
                                 isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers)) {
-                            Log.d("EventType", "Emergency is within hours and kilometers");
                             emergency.setCount(emergency.getCount() + 1);
                             reference.child(alertSnapshot.getKey()).child("count").setValue(alertSnapshot.child("count").getValue(Integer.class) + 1);
                         }
                     }
                 }
-
-
                 dbEmergency.child(emergencyId).setValue(emergency)
                         .addOnSuccessListener(aVoid -> showMessage("Success", "Emergency data saved successfully!"))
                         .addOnFailureListener(e -> showMessage("Error", "Failed to save emergency data!"));
+
+                Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
+                startActivity(intent);
+
             } else {
                 showMessage("Error", "Failed to retrieve data: " + task.getException().getMessage());
             }
@@ -212,6 +217,47 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         longitude = String.valueOf(location.getLongitude());
         Userlocation = latitude + "\n" + longitude + "\n";
         myTextView.setText(Userlocation);
+    }
+    public void getLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
+            return;
+        }
+
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            // Build the alert dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Location Services Not Enabled");
+            builder.setMessage("Please enable Location Services");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
+            Dialog alertDialog = builder.create();
+            alertDialog.setCanceledOnTouchOutside(true);
+            alertDialog.show();
+        } else {
+            LocationListener locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(@NonNull Location location) {
+                    Log.d("Location", "Location changed: " + location.getLatitude() + ", " + location.getLongitude());
+                    // Save the location to a global variable or use it directly where needed
+                    MainActivity3.this.location = location.getLatitude() + "," + location.getLongitude();
+                    // Once you get the location, you can proceed with further actions, such as uploading data to Firebase
+                }
+            };
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+            if (loc != null) {
+                location = loc.getLatitude() + "," + loc.getLongitude();
+                Log.d("Location", "Last known location: " + location);
+                // If you need to use the last known location immediately, you can handle it here
+            }
+        }
     }
 
     public void submitForm(android.view.View view) {

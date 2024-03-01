@@ -9,7 +9,7 @@ public class Emergency {
     private String timestamp = "";
     private String userID = "";
     private String imageUrl = ""; // New field for image URL
-    private int count=0;
+    private int count=1;
 
     @Override
     public String toString() {
