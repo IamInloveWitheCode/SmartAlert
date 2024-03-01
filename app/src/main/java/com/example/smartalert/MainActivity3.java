@@ -178,15 +178,24 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
                     }
                 }
                 dbEmergency.child(emergencyId).setValue(emergency)
-                        .addOnSuccessListener(aVoid -> showMessage("Success", "Emergency data saved successfully!"))
+                        .addOnSuccessListener(aVoid -> {
+                            showMessage("Success", "Emergency data saved successfully!");
+
+                            // Wait for 3 seconds before redirecting to MainActivity2
+                            new android.os.Handler().postDelayed(() -> {
+                                Intent intent = new Intent(MainActivity3.this, MainActivity2.class);
+                                startActivity(intent);
+                                finish(); // Optional, if you want to close the current activity
+                            }, 3000); // 3000 milliseconds delay (adjust as needed)
+                        })
                         .addOnFailureListener(e -> showMessage("Error", "Failed to save emergency data!"));
+
 
             } else {
                 showMessage("Error", "Failed to retrieve data: " + task.getException().getMessage());
             }
         });
-        Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
-        startActivity(intent);
+
     }
 
     // Activity Result API launcher for image selection
@@ -308,6 +317,7 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
                 .setCancelable(true)
                 .show();
     }
+
 
 }
 
