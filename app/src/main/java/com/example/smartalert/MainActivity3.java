@@ -145,9 +145,7 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
             if (task.isSuccessful()) {
                 for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
                     String eventType = alertSnapshot.child("emergency").getValue(String.class);
-
                     if (eventType != null && eventType.equals(emergency.getEmergency())) {
-
                         hours = 0;
                         kilometers = 0;
                         switch (emergency.getEmergency()) {
@@ -183,13 +181,12 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
                         .addOnSuccessListener(aVoid -> showMessage("Success", "Emergency data saved successfully!"))
                         .addOnFailureListener(e -> showMessage("Error", "Failed to save emergency data!"));
 
-                Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
-                startActivity(intent);
-
             } else {
                 showMessage("Error", "Failed to retrieve data: " + task.getException().getMessage());
             }
         });
+        Intent intent = new Intent(getApplicationContext(), MainActivity2.class);
+        startActivity(intent);
     }
 
     // Activity Result API launcher for image selection
