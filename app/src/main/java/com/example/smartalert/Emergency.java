@@ -10,6 +10,7 @@ public class Emergency {
     private String userID = "";
     private String imageUrl = ""; // New field for image URL
     private int count=1;
+    private String status="pending";
 
     @Override
     public String toString() {
@@ -23,6 +24,7 @@ public class Emergency {
                 ", user='" + userID + "/n" +
                 ", image='" + imageUrl + "/n" +
                 ", count='" + count + "/n" +
+                ", status='" + status + "/n" +
                 '}';
     }
 
@@ -41,6 +43,7 @@ public class Emergency {
         this.userID = UserID;
         this.imageUrl = imageUrl;
         this.count=count;
+        this.status=status;
     }
 
 
@@ -91,5 +94,7 @@ public class Emergency {
     public void setCount(int count) {
         this.count = count;
     }
+    public String getStatus(){return status;}
+    public void setStatus(String status){this.status=status;}
 }
 
