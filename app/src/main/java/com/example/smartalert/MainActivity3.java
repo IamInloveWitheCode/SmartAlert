@@ -179,16 +179,12 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
                 }
                 dbEmergency.child(emergencyId).setValue(emergency)
                         .addOnSuccessListener(aVoid -> {
-                            showMessage("Success", "Emergency data saved successfully!");
-
-                            // Wait for 3 seconds before redirecting to MainActivity2
-                            new android.os.Handler().postDelayed(() -> {
-                                Intent intent = new Intent(MainActivity3.this, MainActivity2.class);
-                                startActivity(intent);
-                                finish(); // Optional, if you want to close the current activity
-                            }, 3000); // 3000 milliseconds delay (adjust as needed)
+                            Toast.makeText(MainActivity3.this, "Emergency data saved successfully!", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(MainActivity3.this, MainActivity2.class);
+                            startActivity(intent);
                         })
-                        .addOnFailureListener(e -> showMessage("Error", "Failed to save emergency data!"));
+                        .addOnFailureListener(e -> Toast.makeText(MainActivity3.this, "Failed to save emergency data!", Toast.LENGTH_SHORT).show());
+
 
 
             } else {
