@@ -11,7 +11,7 @@ public class Emergency {
     private String imageUrl = ""; // New field for image URL
     private int count=1;
     private String status="pending";
-
+    
     @Override
     public String toString() {
         return "Emergency{" +
