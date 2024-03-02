@@ -23,11 +23,13 @@ public class MainActivity4 extends AppCompatActivity {
     RecyclerView recyclerView;
     EmergencyAdapter emergencyAdapter;
     List<Emergency> emergencyList;
+    String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
+        userId = getIntent().getStringExtra("userId");
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -49,7 +51,7 @@ public class MainActivity4 extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     // Retrieve emergency data from the snapshot
                     Emergency emergency = snapshot.getValue(Emergency.class);
-                    if (emergency != null) {
+                    if (emergency != null && emergency.getUserID().equals(userId)) {
                         // Add emergency to the list
                         emergencyList.add(emergency);
                     }

@@ -51,7 +51,6 @@ public class MainActivity7 extends AppCompatActivity {
             if (task.isSuccessful()) {
                 for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
                     String eventType = alertSnapshot.child("emergency").getValue(String.class);
-
                 }
 
             }

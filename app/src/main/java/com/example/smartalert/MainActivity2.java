@@ -30,6 +30,7 @@ public class MainActivity2 extends AppCompatActivity {
     }
     public void read(View view){
         Intent intent = new Intent(getApplicationContext(), MainActivity4.class);
+        intent.putExtra("userId",userId);
         startActivity(intent);
     }
 
