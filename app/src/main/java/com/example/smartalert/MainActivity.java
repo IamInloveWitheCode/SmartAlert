@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public void signup(View view){
         if(!email.getText().toString().isEmpty() &&
                 !password.getText().toString().isEmpty()){
-            auth.createUserWithEmailAndPassword(email.getText().toString(),password.getText().toString())
+            auth.createUserWithEmailAndPassword(email.getText().toString().trim(),password.getText().toString())
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void signin(View view){
-        String userEmail = email.getText().toString();
+        String userEmail = email.getText().toString().trim();
         String userPassword = password.getText().toString();
 
         if(!userEmail.isEmpty() && !userPassword.isEmpty()){
