@@ -104,7 +104,6 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
 
-
     public void onAccept(){
         ChangeStatus("accepted");
     }
@@ -147,8 +146,17 @@ public class MainActivity7 extends AppCompatActivity {
                         }
                         if (isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours) &&
                                 isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers)) {
+                            // Update status and count
                             emergency.setStatus(new_status);
+                            emergency.setCount(0); // Set count to 0
                             reference.child(alertSnapshot.getKey()).child("status").setValue(new_status);
+                            reference.child(alertSnapshot.getKey()).child("count").setValue(0); // Set count to 0 in database
+                        }
+                        else if(!isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours)){
+                            emergency.setStatus("denied");
+                            emergency.setCount(0); // Set count to 0
+                            reference.child(alertSnapshot.getKey()).child("status").setValue("denied");
+                            reference.child(alertSnapshot.getKey()).child("count").setValue(0); // Set count to 0 in database
                         }
                     }
                 }
@@ -156,7 +164,8 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
     }
-    public void onBack(){
+
+    public void onBack(View view){
         finish();
     }
     public boolean isWithinHours(String timestamp1, String timestamp2, int n) {
@@ -190,7 +199,4 @@ public class MainActivity7 extends AppCompatActivity {
     }
 
 }
-
-
-
 
