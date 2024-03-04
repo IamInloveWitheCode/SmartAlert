@@ -8,13 +8,13 @@
 
     <Button
         android:id="@+id/button7"
-        android:layout_width="232dp"
+        android:layout_width="249dp"
         android:layout_height="55dp"
-        android:layout_marginTop="216dp"
+        android:layout_marginTop="116dp"
         android:onClick="read"
         android:text="Read last urgent messages"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.477"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,10 +22,11 @@
         android:id="@+id/button8"
         android:layout_width="245dp"
         android:layout_height="59dp"
-        android:layout_marginBottom="244dp"
+        android:layout_marginBottom="152dp"
         android:onClick="submit"
         android:text="submit an emergency incident"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.473"
         app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
