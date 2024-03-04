@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -145,12 +146,10 @@ public class MainActivity7 extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    boolean pendingEmergencyFound = false;
                     for (DataSnapshot alertSnapshot : dataSnapshot.getChildren()) {
                         // Retrieve emergency data from the snapshot
                         emergency = alertSnapshot.getValue(Emergency.class);
                         if (emergency != null && emergency.getStatus().equals("pending")) {
-                            pendingEmergencyFound = true;
                             // Add emergency to the list
                             date.setText(emergency.getTimestamp());
                             int stringResourceId = resources.getIdentifier(alertSnapshot.child("emergency").getValue(String.class), "string","com.example.smartalert");
@@ -172,18 +171,14 @@ public class MainActivity7 extends AppCompatActivity {
                             emergencyId=alertSnapshot.getKey();
                         }
                     }
-                    if (!pendingEmergencyFound) {
-                        showMessage("Warning", "No Pending Emergencies Found!");
-
-                        // Wait for 3 seconds before redirecting to MainActivity2
-                        new android.os.Handler().postDelayed(() -> {
-                            Intent intent = new Intent(MainActivity7.this, MainActivity5.class);
-                            startActivity(intent);
-                            finish(); // Optional, if you want to close the current activity
-                        }, 3000); // 3000 milliseconds delay (adjust as needed)
-                    }
                 } else {
                     showMessage("Warning", "No Pending Emergencies Found!");
+
+                    new Handler().postDelayed(() -> {
+                        Intent intent = new Intent(MainActivity7.this, MainActivity5.class);
+                        startActivity(intent);
+                        finish(); // Optional, if you want to close the current activity
+                    }, 3000); // 3000 milliseconds delay (adjust as needed)
                 }
             }
 
@@ -196,7 +191,7 @@ public class MainActivity7 extends AppCompatActivity {
 
 
     public void onAccept(){
-        //ChangeStatus("accepted");
+        //("accepted");
         //database = FirebaseDatabase.getInstance();
         allUsersReference = database.getReference("Emergencies");
         acceptReference = database.getReference("accepted");
@@ -233,10 +228,8 @@ public class MainActivity7 extends AppCompatActivity {
                                 isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers) ){
 
                             emergency.setStatus("accepted");
+
                             allUsersReference.child(alertSnapshot.getKey()).child("status").setValue("accepted");
-
-                            emergency.setUserID(alertSnapshot.child("userId").getValue(String.class));
-
 
                         }
                     }
@@ -268,72 +261,14 @@ public class MainActivity7 extends AppCompatActivity {
 
 
     public void onDecline(){
-        //ChangeStatus("denied");
-        database = FirebaseDatabase.getInstance();
-        allUsersReference = database.getReference("alerts");
+
+        allUsersReference = database.getReference("Emergencies");
         rejectReference = database.getReference("rejected");
-        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
-                        switch (emergency.getEmergency()){
-                            case "Earthquake":
-                                hours = 2;
-                                kilometers = 150;
-                                break;
-                            case "Flood":
-                                hours = 12;
-                                kilometers = 100;
-                                break;
-                            case "Hurricane":
-                                hours = 24;
-                                kilometers = 80;
-                                break;
-                            case "Fire":
-                                hours = 48;
-                                kilometers = 200;
-                                break;
-                            case "Storm":
-                                hours = 5;
-                                kilometers = 50;
-                                break;
-                        }
-                        if(isWithinHours(alertSnapshot.child("timestamp").getValue(String.class),emergency.getTimestamp(),hours) &&
-                                alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency()) &&
-                                isWithinKilometers(alertSnapshot.child("location").getValue(String.class),emergency.getLocation(),kilometers)&&
-                                !alertSnapshot.child("id").getValue(String.class).equals(emergency.getId())){
-                            //uncomment if you want rejected tables' records to have count equal to 1
-                            //alertClass.setCount(alertClass.getCount()-1);
-                            DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies").child(emergency.getId());
-                            dbEmergency.child("status").setValue("accepted");
-                            allUsersReference.child(alertSnapshot.getKey()).child("count").setValue(alertSnapshot.child("count").getValue(Integer.class)-1);
-                        }
-                    }
-                    System.out.println(emergency);
-                    rejectReference.child(emergency.getId()).setValue(emergency);
-                    allUsersReference.child(emergency.getId()).removeValue();
-                    GatherData();
-                    //onBackPressed();
-                }
-                else {
-                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
-                }
-            }
-        });
-    }
-
-
-    private void ChangeStatus(String new_status){
-        DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies");
-        DatabaseReference reference = database.getReference("Emergencies");
-        reference.get().addOnCompleteListener(task -> {
+        allUsersReference.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
+                for(DataSnapshot alertSnapshot : task.getResult().getChildren()) {
                     String eventType = alertSnapshot.child("emergency").getValue(String.class);
                     if (eventType != null && eventType.equals(emergency.getEmergency())) {
-                        hours = 0;
-                        kilometers = 0;
                         switch (emergency.getEmergency()) {
                             case "Earthquake":
                                 hours = 2;
@@ -357,25 +292,23 @@ public class MainActivity7 extends AppCompatActivity {
                                 break;
                         }
                         if (isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours) &&
+                                alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency()) &&
                                 isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers)) {
-                            // Update status and count
-                            emergency.setStatus(new_status);
-                            emergency.setCount(0); // Set count to 0
-                            reference.child(alertSnapshot.getKey()).child("status").setValue(new_status);
-                            reference.child(alertSnapshot.getKey()).child("count").setValue(0); // Set count to 0 in database
-                        }
-                        else if(!isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours)){
+
                             emergency.setStatus("denied");
-                            emergency.setCount(0); // Set count to 0
-                            reference.child(alertSnapshot.getKey()).child("status").setValue("denied");
-                            reference.child(alertSnapshot.getKey()).child("count").setValue(0); // Set count to 0 in database
+
+                            allUsersReference.child(alertSnapshot.getKey()).child("status").setValue("denied");
                         }
                     }
+
+                    rejectReference.child(emergency.getId()).setValue(emergency);
+                    allUsersReference.child(emergency.getId()).removeValue();
+
+                    GatherData();
                 }
-                if(new_status.equals("approved")){
-                    //SendNotification();
-                }
-                GatherData();
+            }
+            else {
+                Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
             }
         });
     }
@@ -383,6 +316,7 @@ public class MainActivity7 extends AppCompatActivity {
     public void onBack(View view){
         finish();
     }
+
     public boolean isWithinHours(String timestamp1, String timestamp2, int n) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
@@ -393,6 +327,7 @@ public class MainActivity7 extends AppCompatActivity {
             return false;
         }
     }
+
     //Calculates the distance between 2 points using Haversine Formula
     public static boolean isWithinKilometers(String location1, String location2, double n) {
         String[] latLong1 = location1.split(",");
@@ -412,6 +347,7 @@ public class MainActivity7 extends AppCompatActivity {
 
         return distance <= n;
     }
+
     private void sendNotification(){
         allUsersReference = database.getReference("Users");
         allUsersReference.get().addOnCompleteListener(task -> {
@@ -452,6 +388,7 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
     }
+
     private void showMessage(String title, String message) {
         new AlertDialog.Builder(this)
                 .setTitle(title)
