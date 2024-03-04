@@ -233,8 +233,9 @@ public class MainActivity7 extends AppCompatActivity {
                         if (isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours) &&
                                 alertSnapshot.child("event").getValue(String.class).equals(emergency.getEmergency()) &&
                                 isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers) &&
-                                !alertSnapshot.child("status").getValue(String.class).equals(emergency.getId())) {
-                            //
+                                !alertSnapshot.child("id").getValue(String.class).equals(emergency.getId())){
+                            DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies").child(emergency.getId());
+                            dbEmergency.child("status").setValue("accepted");
                             acceptReference.child(alertSnapshot.getKey()).setValue(alertSnapshot.getValue(Emergency.class));
                             allUsersReference.child(alertSnapshot.getKey()).removeValue();
                         }
@@ -304,6 +305,8 @@ public class MainActivity7 extends AppCompatActivity {
                                 !alertSnapshot.child("id").getValue(String.class).equals(emergency.getId())){
                             //uncomment if you want rejected tables' records to have count equal to 1
                             //alertClass.setCount(alertClass.getCount()-1);
+                            DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies").child(emergency.getId());
+                            dbEmergency.child("status").setValue("accepted");
                             allUsersReference.child(alertSnapshot.getKey()).child("count").setValue(alertSnapshot.child("count").getValue(Integer.class)-1);
                         }
                     }
