@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">smartalert</string>
+    <string name="location">Τοποθεσία</string>
+    <string name="email">Ηλεκτρονική Διεύθυνση</string>
+    <string name="sign_up">Εγγραφή</string>
+    <string name="error">Σφάλμα!</string>
+    <string name="Earthquake">Σεισμός</string>
+    <string name="Flood">Πλυμμήρα</string>
+    <string name="Fire">Φωτιά</string>
+    <string name="Hurricane">Ανεμοστρόβιλος</string>
+    <string name="Storm">Καταιγίδα</string>
+    <string name="alertEarthquake">Πέσε, καλύψου και κρατήσου. Μείνε μακριά από παράθυρα και αντικείμενα που μπορούν να πέσουν. Εκκενώσου αν σου οδηγηθεί να το κάνεις. Ψάξε για καταφύγιο μέχρι να σταματήσει ο σεισμός.</string>
+    <string name="alertFlood">Εκκενώστε αμέσως και μετακινηθείτε σε υψηλότερο έδαφος. Αποφύγετε τις χαμηλά εστιασμένες περιοχές και μην επιχειρήσετε να οδηγήσετε ή να περπατήσετε μέσα από πελώριες περιοχές. Μείνετε συντονισμένοι για ενημερώσεις και ακολουθήστε τις οδηγίες των τοπικών αρχών.</string>
+    <string name="alertStorm">Ψάξτε αμέσως καταφύγιο. Μείνετε μέσα και αποφύγετε τα παράθυρα. Μείνετε συντονισμένοι για ενημερώσεις και ακολουθήστε τις οδηγίες των τοπικών αρχών.</string>
+    <string name="alertHurricane">Ένας τυφώνας πλησιάζει. Παρακαλώ προχωρήστε άμεσα σε ενέργειες για να ασφαλίσετε την περιουσία σας και εκκενώστε εάν σας οδηγηθεί να το κάνετε από τις τοπικές αρχές. Μείνετε συντονισμένοι για ενημερώσεις και ακολουθήστε όλες τις επίσημες εντολές εκκένωσης.</string>
+    <string name="alertFire">Έχει αναφερθεί πυρκαγιά στην περιοχή. Εκκενώστε αμέσως και μετακινηθείτε σε μια ασφαλή τοποθεσία. Ακολουθήστε τις οδηγίες του προσωπικού των υπηρεσιών έκτακτης ανάγκης και παραμείνετε συντονισμένοι για ενημερώσεις. Μην χρησιμοποιείτε ανελκυστήρες. Καλέστε το 911 εάν βρίσκεστε σε άμεσο κίνδυνο.</string>
+    <string name="sign_in">Σύνδεση</string>
+    <string name="enter_email">Εισάγετε ηλεκτρονική διεύθυνση</string>
+    <string name="enter_password">Εισάγετε τον κωδικό</string>
+    <string name="read_last_urgent_messages">Διαβάστε τα επείγοντα μηνύματα</string>
+    <string name="submit_an_emergency_incident">Υποβάλετε επείγον περιστατικό</string>
+    <string name="describe_the_danger">Περιγράψτε τον κίνδυνο</string>
+    <string name="find_your_location">Βρείτε την Τοποθεσία σας</string>
+    <string name="select_image">Επιλέξτε εικόνα</string>
+    <string name="submit">Υποβολή</string>
+    <string name="read_statistics">Διαβάστε τα Στατιστικά</string>
+    <string name="accept_or_decline_nnew_message">Αποδοχή ή Απόρριψη</string>
+    <string name="welcome">Καλώς Ήρθατε</string>
+</resources>

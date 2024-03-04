@@ -12,7 +12,7 @@
         android:layout_height="55dp"
         android:layout_marginTop="240dp"
         android:onClick="read"
-        android:text="Read Statistics"
+        android:text="@string/read_statistics"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.474"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,7 +24,7 @@
         android:layout_height="59dp"
         android:layout_marginBottom="284dp"
         android:onClick="submit"
-        android:text="Accept or Decline                  New Message"
+        android:text="@string/accept_or_decline_nnew_message"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
