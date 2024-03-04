@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -29,6 +30,7 @@ public class DatabaseListenerService extends Service {
     //If the startTracking value changes then a new Location Service is being started with all the data needed passed to it.
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         createNotificationChannel();
         startForeground(1,createNotification());
         mAuth = FirebaseAuth.getInstance();
@@ -59,6 +61,8 @@ public class DatabaseListenerService extends Service {
                 // Handle error
             }
         });
+
+        Log.d("DatabaseListenerService", "Service started");
 
         return super.onStartCommand(intent, flags, startId);
     }

@@ -43,7 +43,7 @@ public class MainActivity4 extends AppCompatActivity {
         recyclerView.setAdapter(emergencyAdapter);
 
         // Get reference to the "Emergencies" node in the database
-        DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies");
+        DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("accepted");
 
         dbEmergency.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

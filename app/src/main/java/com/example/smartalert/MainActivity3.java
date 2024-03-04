@@ -26,8 +26,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -77,9 +75,16 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         mydate = findViewById(R.id.date);
         description = findViewById(R.id.description);
 
+        String eq = getString(R.string.Earthquake);
+        String flood = getString(R.string.Flood);
+        String hurricane = getString(R.string.Hurricane);
+        String fire = getString(R.string.Fire);
+        String storm = getString(R.string.Storm);
+        String[] eventSpinner = new String[]{eq, flood, hurricane, fire, storm};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, eventSpinner);
         // Set up spinner
         spinner = findViewById(R.id.spinner1);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.dangers, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
@@ -140,7 +145,8 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         String timestamp = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now());
         DatabaseReference reference = database.getReference("Emergencies");
         String emergencyId = reference.push().getKey();
-        Emergency emergency = new Emergency(emergencyId,stringdesc, TypeOfEmergency, latitude, longitude, location, timestamp, userId, imageUrl);
+        String englishEmergencyType = getEnglishStringResourceId(TypeOfEmergency);
+        Emergency emergency = new Emergency(emergencyId,stringdesc, englishEmergencyType, latitude, longitude, location, timestamp, userId, imageUrl);
         emergency.setId(emergencyId);
         emergency.setUserID(userId);
         reference.get().addOnCompleteListener(task -> {
@@ -195,6 +201,25 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         });
 
     }
+
+    private String getEnglishStringResourceId(String typeOfEmergency) {
+        switch (typeOfEmergency) {
+            case "Σεισμός":
+                return "Earthquake"; // English resource ID string
+            case "Πλημμύρα":
+                return "Flood"; // English resource ID string
+            case "Φωτιά":
+                return "Fire"; // English resource ID string
+            case "Ανεμοστρόβιλος":
+                return "Hurricane"; // English resource ID string
+            case "Καταιγίδα":
+                return "Storm"; // English resource ID string
+            default:
+                return typeOfEmergency;
+        }
+    }
+
+
 
     // Activity Result API launcher for image selection
     private final ActivityResultLauncher<Intent> resultLauncher = registerForActivityResult(

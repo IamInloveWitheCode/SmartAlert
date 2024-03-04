@@ -31,6 +31,9 @@
     <string name="welcome">Welcome</string>
     <string name="countstatistics">CountStatistics</string>
     <string name="back">Back</string>
-    <string name="counter">Counter</string>
+    <string name="counter">Total Reports</string>
     <string name="decline">Decline</string>
+    <string name="toastLocOn">Please turn your location on!</string>
+    <string name="toastNotifOn">Please grant access to your Notification permissions</string>
+    <string name="toastAllowATT">Please enable the allow all the time field in Location permissions!</string>
 </resources>

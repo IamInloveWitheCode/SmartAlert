@@ -27,4 +27,11 @@
     <string name="read_statistics">Διαβάστε τα Στατιστικά</string>
     <string name="accept_or_decline_nnew_message">Αποδοχή ή Απόρριψη</string>
     <string name="welcome">Καλώς Ήρθατε</string>
+    <string name="countstatistics">Στατιστικά</string>
+    <string name="back">Πίσω</string>
+    <string name="counter">Συνολικές αναφορές</string>
+    <string name="decline">Απόρριψη</string>
+    <string name="toastLocOn">Ενεργοποίησε την τοποθεσία!</string>
+    <string name="toastNotifOn">Ενεργοποιήστε τις ειδοποιήσεις!</string>
+    <string name="toastAllowATT">Επιτρέψτε μόνιμη πρόσβαση στην τοποθεσία σας!</string>
 </resources>
