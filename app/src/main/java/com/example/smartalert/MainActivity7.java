@@ -61,17 +61,10 @@ public class MainActivity7 extends AppCompatActivity {
     private DatabaseReference userRef;
     String emergencyId="";
     DatabaseReference allUsersReference, rejectReference, acceptReference, sentAlertsReference;
-    EditText instructions;
-    ImageView image;
-    Button accept, reject;
-    StorageReference storageReference;
-    CheckBox checkBoxSimilar, checkBoxInstructions;
     String message = "";
     String targetToken = "";
     Resources resources;
-    String eventENG;
-    FirebaseAuth mAuth;
-
+    String eventENG,associatedString;
 
 
     @Override
@@ -104,6 +97,8 @@ public class MainActivity7 extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         userRef = FirebaseDatabase.getInstance().getReference("User");
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        resources = getResources();
+
         //allUsersReference = database.getReference("Emergencies");
 
         /*allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
@@ -158,7 +153,10 @@ public class MainActivity7 extends AppCompatActivity {
                             pendingEmergencyFound = true;
                             // Add emergency to the list
                             date.setText(emergency.getTimestamp());
-                            danger.setText(emergency.getEmergency());
+                            int stringResourceId = resources.getIdentifier(alertSnapshot.child("emergency").getValue(String.class), "string","com.example.smartalert");
+                            associatedString = resources.getString(stringResourceId);
+                            eventENG = alertSnapshot.child("emergency").getValue(String.class);
+                            danger.setText(associatedString);
                             location.setText(emergency.getLocation());
                             String loc = alertSnapshot.child("location").getValue(String.class);
                             try {
@@ -185,7 +183,7 @@ public class MainActivity7 extends AppCompatActivity {
                         }, 3000); // 3000 milliseconds delay (adjust as needed)
                     }
                 } else {
-
+                    showMessage("Warning", "No Pending Emergencies Found!");
                 }
             }
 
@@ -199,15 +197,15 @@ public class MainActivity7 extends AppCompatActivity {
 
     public void onAccept(){
         //ChangeStatus("accepted");
-        database = FirebaseDatabase.getInstance();
-        allUsersReference = database.getReference("emergencies");
+        //database = FirebaseDatabase.getInstance();
+        allUsersReference = database.getReference("Emergencies");
         acceptReference = database.getReference("accepted");
         sentAlertsReference = database.getReference("sent_alerts");
-        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
+        allUsersReference.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
+                    String eventType = alertSnapshot.child("emergency").getValue(String.class);
+                    if (eventType != null && eventType.equals(emergency.getEmergency())) {
                         switch (emergency.getEmergency()) {
                             case "Earthquake":
                                 hours = 2;
@@ -231,37 +229,39 @@ public class MainActivity7 extends AppCompatActivity {
                                 break;
                         }
                         if (isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours) &&
-                                alertSnapshot.child("event").getValue(String.class).equals(emergency.getEmergency()) &&
-                                isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers) &&
-                                !alertSnapshot.child("id").getValue(String.class).equals(emergency.getId())){
-                            DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies").child(emergency.getId());
-                            dbEmergency.child("status").setValue("accepted");
-                            acceptReference.child(alertSnapshot.getKey()).setValue(alertSnapshot.getValue(Emergency.class));
-                            allUsersReference.child(alertSnapshot.getKey()).removeValue();
+                                alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency()) &&
+                                isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers) ){
+
+                            emergency.setStatus("accepted");
+                            allUsersReference.child(alertSnapshot.getKey()).child("status").setValue("accepted");
+
+                            emergency.setUserID(alertSnapshot.child("userId").getValue(String.class));
+
+
                         }
                     }
-                    acceptReference.child(emergency.getId()).setValue(emergency);
-                    allUsersReference.child(emergency.getId()).removeValue();
-                    acceptReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DataSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                int c = 0;
-                                for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
-                                    if (alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency())) {
-                                        c++;
-                                    }
-                                }
-                                sentAlertsReference.child(emergency.getEmergency()).setValue(c);
+                }
+
+                acceptReference.child(emergency.getId()).setValue(emergency);
+
+                allUsersReference.child(emergency.getId()).removeValue();
+                acceptReference.get().addOnCompleteListener(task1 -> {
+                    if (task1.isSuccessful()) {
+                        int c = 0;
+                        for (DataSnapshot alertSnapshot : task1.getResult().getChildren()) {
+                            if (alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency())) {
+                                c++;
                             }
                         }
-                    });
-                    sendNotification();
-                    GatherData();
-                    //onBackPressed();
-                } else {
-                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
-                }
+                        sentAlertsReference.child(emergency.getEmergency()).setValue(c);
+                    }
+                });
+
+                sendNotification();
+                GatherData();
+                //onBackPressed();
+            } else {
+                Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
             }
         });
     }
@@ -413,59 +413,42 @@ public class MainActivity7 extends AppCompatActivity {
         return distance <= n;
     }
     private void sendNotification(){
-        allUsersReference = database.getReference("all_users");
-        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
-                        if (alertSnapshot.child("role").getValue(String.class).equals("user")) {
-                            switch (eventENG) {
-                                case "Earthquake":
-                                    kilometers = 150;
-                                    message = getString(R.string.alertEarthquake);
-                                    break;
-                                case "Flood":
-                                    kilometers = 100;
-                                    message = getString(R.string.alertFlood);
-                                    break;
-                                case "Hurricane":
-                                    kilometers = 80;
-                                    message = getString(R.string.alertHurricane);
-                                    break;
-                                case "Fire":
-                                    kilometers = 200;
-                                    message = getString(R.string.alertFire);
-                                    break;
-                                case "Storm":
-                                    kilometers = 50;
-                                    message = getString(R.string.alertStorm);
-                                    break;
-                            }
-                            targetToken = alertSnapshot.child("token").getValue(String.class);
-                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("eventLocation").setValue(emergency.getLocation());
-                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("title").setValue(eventENG);
-                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("message").setValue(message);
-                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("startTracking").setValue(true);
+        allUsersReference = database.getReference("Users");
+        allUsersReference.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
+                    if (alertSnapshot.child("role").getValue(String.class).equals("user")) {
+                        switch (eventENG) {
+                            case "Earthquake":
+                                kilometers = 150;
+                                message = getString(R.string.alertEarthquake);
+                                break;
+                            case "Flood":
+                                kilometers = 100;
+                                message = getString(R.string.alertFlood);
+                                break;
+                            case "Hurricane":
+                                kilometers = 80;
+                                message = getString(R.string.alertHurricane);
+                                break;
+                            case "Fire":
+                                kilometers = 200;
+                                message = getString(R.string.alertFire);
+                                break;
+                            case "Storm":
+                                kilometers = 50;
+                                message = getString(R.string.alertStorm);
+                                break;
                         }
+                        targetToken = alertSnapshot.child("token").getValue(String.class);
+                        allUsersReference.child(alertSnapshot.child("userid").getValue(String.class)).child("Location").setValue(emergency.getLocation());
+                        allUsersReference.child(alertSnapshot.child("userid").getValue(String.class)).child("emergency").setValue(eventENG);
+                        allUsersReference.child(alertSnapshot.child("userid").getValue(String.class)).child("description").setValue(message);
                     }
-                    allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DataSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
-                                    if(alertSnapshot.child("role").getValue(String.class).equals("user"))
-                                        allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("startTracking").setValue(false);
-                                }
-                            }else {
-                                Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
-                            }
-                        }
-                    });
                 }
-                else {
-                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
-                }
+            }
+            else {
+                Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
             }
         });
     }

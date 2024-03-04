@@ -23,7 +23,7 @@ public class Emergency {
                 ", longitude='" + longitude + "/n" +
                 ", location='" + location + "/n" +
                 ", timestamp='" + timestamp + "/n" +
-                ", user='" + userID + "/n" +
+                ", userID='" + userID + "/n" +
                 ", image='" + imageUrl + "/n" +
                 ", count='" + count + "/n" +
                 ", status='" + status + "/n" +

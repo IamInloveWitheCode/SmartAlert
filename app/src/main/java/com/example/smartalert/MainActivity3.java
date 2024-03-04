@@ -141,6 +141,7 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         DatabaseReference reference = database.getReference("Emergencies");
         String emergencyId = reference.push().getKey();
         Emergency emergency = new Emergency(emergencyId,stringdesc, TypeOfEmergency, latitude, longitude, location, timestamp, userId, imageUrl);
+        emergency.setId(emergencyId);
         reference.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
