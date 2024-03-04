@@ -5,26 +5,32 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
+import com.example.smartalert.MainActivity;
+import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
 
-public class FirebaseMessagingService extends com.google.firebase.messaging.FirebaseMessagingService {
+public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String token) {
         //super.onNewToken(token);
         System.out.println("MyToken "+ token);
     }
+
     //Gets the message through FirebaseMessagingService and calls sendNotification().
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         sendNotification(remoteMessage);
     }
+
     //Gets the content of the remoteMessage and creates a specific notification that is sent to the users.
     private void sendNotification(RemoteMessage remoteMessage) {
         Map<String,String> data = remoteMessage.getData();
@@ -36,19 +42,18 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                 PendingIntent.FLAG_IMMUTABLE);
 
         String channelId = "channelID";
-        //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
-                        //.setSmallIcon(R.drawable.logofg)
+                        .setSmallIcon(R.drawable.notification_bell)
                         .setContentTitle(title)
                         .setAutoCancel(true)
-                        //.setSound(defaultSoundUri)
+                        .setSound(defaultSoundUri)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
                         .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId,

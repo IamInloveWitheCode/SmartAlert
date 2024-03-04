@@ -1,28 +1,49 @@
 package com.example.smartalert;
 
+import static java.lang.Double.parseDouble;
+
 import android.content.Intent;
+import android.content.res.Resources;
+import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity7 extends AppCompatActivity {
     TextView date;
@@ -36,7 +57,20 @@ public class MainActivity7 extends AppCompatActivity {
     int hours = 0;
     int kilometers = 0;
     Emergency emergency;
-
+    private FirebaseMessaging firebaseMessaging;
+    private DatabaseReference userRef;
+    String emergencyId="";
+    DatabaseReference allUsersReference, rejectReference, acceptReference, sentAlertsReference;
+    EditText instructions;
+    ImageView image;
+    Button accept, reject;
+    StorageReference storageReference;
+    CheckBox checkBoxSimilar, checkBoxInstructions;
+    String message = "";
+    String targetToken = "";
+    Resources resources;
+    String eventENG;
+    FirebaseAuth mAuth;
 
 
 
@@ -44,6 +78,7 @@ public class MainActivity7 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main7);
+        firebaseMessaging = FirebaseMessaging.getInstance();
         date = findViewById(R.id.date);
         danger = findViewById(R.id.danger);
         counter=findViewById(R.id.counterview);
@@ -67,8 +102,43 @@ public class MainActivity7 extends AppCompatActivity {
             }
         });
         database = FirebaseDatabase.getInstance();
+        userRef = FirebaseDatabase.getInstance().getReference("User");
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
-        GatherData();
+        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
+                        if(alertSnapshot.child("id").getValue().equals(getIntent().getStringExtra("id"))) {
+                            emergency = alertSnapshot.getValue(Emergency.class);
+                            int stringResourceId = resources.getIdentifier(alertSnapshot.child("emergency").getValue(String.class), "string","com.example.smartalert");
+                            String associatedString = resources.getString(stringResourceId);
+                            eventENG = alertSnapshot.child("emergency").getValue(String.class);
+                            danger.setText(associatedString);
+                            String loc = alertSnapshot.child("location").getValue(String.class);
+                            try {
+                                String city = geocoder.getFromLocation(parseDouble(loc.substring(0,loc.indexOf(","))),parseDouble(loc.substring(loc.indexOf(",")+1,loc.length())),1).get(0).getAddressLine(0);
+                                location.setText(city);
+                                System.out.println(city);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            date.setText(emergency.getTimestamp());
+                            description.setText(emergency.getDescription());
+                            counter.setText("Total Reports:"+emergency.getCount());
+                            Picasso.get().load(emergency.getImageUrl()).into(imageView);
+                        }
+                    }
+                }
+                else {
+                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
+                }
+            }
+        });
+
+
+        //GatherData();
 
     }
 
@@ -78,10 +148,12 @@ public class MainActivity7 extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
+                    boolean pendingEmergencyFound = false;
                     for (DataSnapshot alertSnapshot : dataSnapshot.getChildren()) {
                         // Retrieve emergency data from the snapshot
                         emergency = alertSnapshot.getValue(Emergency.class);
                         if (emergency != null && emergency.getStatus().equals("pending")) {
+                            pendingEmergencyFound = true;
                             // Add emergency to the list
                             date.setText(emergency.getTimestamp());
                             danger.setText(emergency.getEmergency());
@@ -89,10 +161,21 @@ public class MainActivity7 extends AppCompatActivity {
                             description.setText(emergency.getDescription());
                             counter.setText("Total Reports:"+emergency.getCount());
                             Picasso.get().load(emergency.getImageUrl()).into(imageView);
+                            emergencyId=alertSnapshot.getKey();
                         }
                     }
+                    if (!pendingEmergencyFound) {
+                        showMessage("Warning", "No Pending Emergencies Found!");
+
+                        // Wait for 3 seconds before redirecting to MainActivity2
+                        new android.os.Handler().postDelayed(() -> {
+                            Intent intent = new Intent(MainActivity7.this, MainActivity5.class);
+                            startActivity(intent);
+                            finish(); // Optional, if you want to close the current activity
+                        }, 3000); // 3000 milliseconds delay (adjust as needed)
+                    }
                 } else {
-                    // Handle the case where no data exists
+
                 }
             }
 
@@ -105,10 +188,125 @@ public class MainActivity7 extends AppCompatActivity {
 
 
     public void onAccept(){
-        ChangeStatus("accepted");
+        //ChangeStatus("accepted");
+        database = FirebaseDatabase.getInstance();
+        allUsersReference = database.getReference("emergencies");
+        acceptReference = database.getReference("accepted");
+        sentAlertsReference = database.getReference("sent_alerts");
+        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
+                        switch (emergency.getEmergency()) {
+                            case "Earthquake":
+                                hours = 2;
+                                kilometers = 150;
+                                break;
+                            case "Flood":
+                                hours = 12;
+                                kilometers = 100;
+                                break;
+                            case "Hurricane":
+                                hours = 24;
+                                kilometers = 80;
+                                break;
+                            case "Fire":
+                                hours = 48;
+                                kilometers = 200;
+                                break;
+                            case "Storm":
+                                hours = 5;
+                                kilometers = 50;
+                                break;
+                        }
+                        if (isWithinHours(alertSnapshot.child("timestamp").getValue(String.class), emergency.getTimestamp(), hours) &&
+                                alertSnapshot.child("event").getValue(String.class).equals(emergency.getEmergency()) &&
+                                isWithinKilometers(alertSnapshot.child("location").getValue(String.class), emergency.getLocation(), kilometers) &&
+                                !alertSnapshot.child("status").getValue(String.class).equals(emergency.getId())) {
+                            //
+                            acceptReference.child(alertSnapshot.getKey()).setValue(alertSnapshot.getValue(Emergency.class));
+                            allUsersReference.child(alertSnapshot.getKey()).removeValue();
+                        }
+                    }
+                    acceptReference.child(emergency.getId()).setValue(emergency);
+                    allUsersReference.child(emergency.getId()).removeValue();
+                    acceptReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                int c = 0;
+                                for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {
+                                    if (alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency())) {
+                                        c++;
+                                    }
+                                }
+                                sentAlertsReference.child(emergency.getEmergency()).setValue(c);
+                            }
+                        }
+                    });
+                    sendNotification();
+                    onBackPressed();
+                } else {
+                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
+                }
+            }
+        });
+
     }
+
+
     public void onDecline(){
-        ChangeStatus("denied");
+        //ChangeStatus("denied");
+        database = FirebaseDatabase.getInstance();
+        allUsersReference = database.getReference("alerts");
+        rejectReference = database.getReference("rejected");
+        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
+                        switch (emergency.getEmergency()){
+                            case "Earthquake":
+                                hours = 2;
+                                kilometers = 150;
+                                break;
+                            case "Flood":
+                                hours = 12;
+                                kilometers = 100;
+                                break;
+                            case "Hurricane":
+                                hours = 24;
+                                kilometers = 80;
+                                break;
+                            case "Fire":
+                                hours = 48;
+                                kilometers = 200;
+                                break;
+                            case "Storm":
+                                hours = 5;
+                                kilometers = 50;
+                                break;
+                        }
+                        if(isWithinHours(alertSnapshot.child("timestamp").getValue(String.class),emergency.getTimestamp(),hours) &&
+                                alertSnapshot.child("emergency").getValue(String.class).equals(emergency.getEmergency()) &&
+                                isWithinKilometers(alertSnapshot.child("location").getValue(String.class),emergency.getLocation(),kilometers)&&
+                                !alertSnapshot.child("id").getValue(String.class).equals(emergency.getId())){
+                            //uncomment if you want rejected tables' records to have count equal to 1
+                            //alertClass.setCount(alertClass.getCount()-1);
+                            allUsersReference.child(alertSnapshot.getKey()).child("count").setValue(alertSnapshot.child("count").getValue(Integer.class)-1);
+                        }
+                    }
+                    System.out.println(emergency);
+                    rejectReference.child(emergency.getId()).setValue(emergency);
+                    allUsersReference.child(emergency.getId()).removeValue();
+                    onBackPressed();
+                }
+                else {
+                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
+                }
+            }
+        });
     }
 
 
@@ -160,6 +358,9 @@ public class MainActivity7 extends AppCompatActivity {
                         }
                     }
                 }
+                if(new_status.equals("approved")){
+                    //SendNotification();
+                }
                 GatherData();
             }
         });
@@ -196,6 +397,70 @@ public class MainActivity7 extends AppCompatActivity {
         double distance = earthRadius * c;
 
         return distance <= n;
+    }
+    private void sendNotification(){
+        allUsersReference = database.getReference("all_users");
+        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
+                        if (alertSnapshot.child("role").getValue(String.class).equals("user")) {
+                            switch (eventENG) {
+                                case "Earthquake":
+                                    kilometers = 150;
+                                    message = getString(R.string.alertEarthquake);
+                                    break;
+                                case "Flood":
+                                    kilometers = 100;
+                                    message = getString(R.string.alertFlood);
+                                    break;
+                                case "Hurricane":
+                                    kilometers = 80;
+                                    message = getString(R.string.alertHurricane);
+                                    break;
+                                case "Fire":
+                                    kilometers = 200;
+                                    message = getString(R.string.alertFire);
+                                    break;
+                                case "Storm":
+                                    kilometers = 50;
+                                    message = getString(R.string.alertStorm);
+                                    break;
+                            }
+                            targetToken = alertSnapshot.child("token").getValue(String.class);
+                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("eventLocation").setValue(emergency.getLocation());
+                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("title").setValue(eventENG);
+                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("message").setValue(message);
+                            allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("startTracking").setValue(true);
+                        }
+                    }
+                    allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DataSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                for(DataSnapshot alertSnapshot : task.getResult().getChildren()){
+                                    if(alertSnapshot.child("role").getValue(String.class).equals("user"))
+                                        allUsersReference.child(alertSnapshot.child("uid").getValue(String.class)).child("startTracking").setValue(false);
+                                }
+                            }else {
+                                Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
+                            }
+                        }
+                    });
+                }
+                else {
+                    Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
+                }
+            }
+        });
+    }
+    private void showMessage(String title, String message) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(true)
+                .show();
     }
 
 }

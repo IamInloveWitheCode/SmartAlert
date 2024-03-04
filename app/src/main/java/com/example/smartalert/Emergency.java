@@ -11,11 +11,13 @@ public class Emergency {
     private String imageUrl = ""; // New field for image URL
     private int count=1;
     private String status="pending";
+    private String id="";
     
     @Override
     public String toString() {
         return "Emergency{" +
-                "description='" + description + "/n" +
+                "id='"+id+"/n"+
+                ",description='" + description + "/n" +
                 ", emergency='" + emergency + "/n" +
                 ", latitude='" + latitude + "/n" +
                 ", longitude='" + longitude + "/n" +
@@ -33,7 +35,8 @@ public class Emergency {
     }
 
     // Update the constructor to accept a User object for userID
-    public Emergency(String Description, String Emergency, String Latitude, String Longitude, String Location, String Timestamp, String UserID,String imageUrl) {
+    public Emergency(String Id, String Description, String Emergency, String Latitude, String Longitude, String Location, String Timestamp, String UserID,String imageUrl) {
+        this.id=id;
         this.description = Description;
         this.emergency = Emergency;
         this.latitude = Latitude;
@@ -96,5 +99,7 @@ public class Emergency {
     }
     public String getStatus(){return status;}
     public void setStatus(String status){this.status=status;}
+    public String getId(){return id;}
+    public void setId(String id){this.id=id;}
 }
 

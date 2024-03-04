@@ -140,7 +140,7 @@ public class MainActivity3 extends AppCompatActivity implements AdapterView.OnIt
         String timestamp = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now());
         DatabaseReference reference = database.getReference("Emergencies");
         String emergencyId = reference.push().getKey();
-        Emergency emergency = new Emergency(stringdesc, TypeOfEmergency, latitude, longitude, location, timestamp, userId, imageUrl);
+        Emergency emergency = new Emergency(emergencyId,stringdesc, TypeOfEmergency, latitude, longitude, location, timestamp, userId, imageUrl);
         reference.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (DataSnapshot alertSnapshot : task.getResult().getChildren()) {

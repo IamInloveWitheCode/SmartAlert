@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
 
     <application
@@ -46,13 +50,25 @@
         </activity>
         <service android:name=".LocationService" />
         <service
-            android:name=".FirebaseMessagingService"
+            android:name=".MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service android:name=".DatabaseListenerService" />
+        <service
+            android:name=".DatabaseListenerService"
+            android:foregroundServiceType="location">
+        </service>
+
+        <receiver
+            android:name=".CancelReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="CLOSE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
