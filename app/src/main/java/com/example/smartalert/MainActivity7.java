@@ -104,8 +104,9 @@ public class MainActivity7 extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         userRef = FirebaseDatabase.getInstance().getReference("User");
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        //allUsersReference = database.getReference("Emergencies");
 
-        allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+        /*allUsersReference.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (task.isSuccessful()) {
@@ -135,15 +136,16 @@ public class MainActivity7 extends AppCompatActivity {
                     Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
                 }
             }
-        });
+        });*/
 
 
-        //GatherData();
+        GatherData();
 
     }
 
     private void GatherData() {
         DatabaseReference dbEmergency = FirebaseDatabase.getInstance().getReference("Emergencies");
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         dbEmergency.orderByChild("count").limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -158,6 +160,14 @@ public class MainActivity7 extends AppCompatActivity {
                             date.setText(emergency.getTimestamp());
                             danger.setText(emergency.getEmergency());
                             location.setText(emergency.getLocation());
+                            String loc = alertSnapshot.child("location").getValue(String.class);
+                            try {
+                                String city = geocoder.getFromLocation(parseDouble(loc.substring(0,loc.indexOf(","))),parseDouble(loc.substring(loc.indexOf(",")+1,loc.length())),1).get(0).getAddressLine(0);
+                                location.setText(city);
+                                System.out.println(city);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                             description.setText(emergency.getDescription());
                             counter.setText("Total Reports:"+emergency.getCount());
                             Picasso.get().load(emergency.getImageUrl()).into(imageView);
@@ -246,13 +256,13 @@ public class MainActivity7 extends AppCompatActivity {
                         }
                     });
                     sendNotification();
-                    onBackPressed();
+                    GatherData();
+                    //onBackPressed();
                 } else {
                     Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
                 }
             }
         });
-
     }
 
 
@@ -300,7 +310,8 @@ public class MainActivity7 extends AppCompatActivity {
                     System.out.println(emergency);
                     rejectReference.child(emergency.getId()).setValue(emergency);
                     allUsersReference.child(emergency.getId()).removeValue();
-                    onBackPressed();
+                    GatherData();
+                    //onBackPressed();
                 }
                 else {
                     Log.d("Task was not successful", String.valueOf(task.getResult().getValue()));
